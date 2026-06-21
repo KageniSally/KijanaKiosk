@@ -1,0 +1,13 @@
+========================================
+Post Remediation Verification
+========================================
+
+Forced log rotation:
+sudo logrotate --force /etc/logrotate.d/kijanikiosk
+
+PASS: logrotate completed successfully.
+
+ACL verification:
+sudo -u kk-api touch /opt/kijanikiosk/shared/logs/test-write.tmp
+
+PASS: kk-api can write after logrotate.
