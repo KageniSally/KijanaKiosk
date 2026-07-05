@@ -1,0 +1,214 @@
+---
+- name: Configure KijaniKiosk Servers
+  hosts: kijanikiosk
+  become: true
+  gather_facts: true
+
+  vars:
+    app_base_dir: /opt/kijanikiosk
+    app_config_dir: /opt/kijanikiosk/config
+    app_log_dir: /var/log/kijanikiosk
+
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+  tasks:
+
+    ####################################################
+    # Install Packages
+    ####################################################
+
+    - name: Install required packages
+      apt:
+        name:
+          - nginx
+          - ufw
+          - git
+          - curl
+          - unzip
+          - python3-pip
+          - rsyslog
+          - logrotate
+        state: present
+
+    ####################################################
+    # Create Service Accounts
+    ####################################################
+
+    - name: Create API service account
+      user:
+        name: kk-api
+        system: yes
+        shell: /usr/sbin/nologin
+        create_home: no
+
+    - name: Create Payments service account
+      user:
+        name: kk-payments
+        system: yes
+        shell: /usr/sbin/nologin
+        create_home: no
+
+    - name: Create Logs service account
+      user:
+        name: kk-logs
+        system: yes
+        shell: /usr/sbin/nologin
+        create_home: no
+
+    ####################################################
+    # Directory Structure
+    ####################################################
+
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      loop:
+        - "{{ app_base_dir }}"
+        - "{{ app_config_dir }}"
+        - "{{ app_log_dir }}"
+
+    ####################################################
+    # Deploy Environment Files
+    ####################################################
+
+    - name: Deploy API environment file
+      template:
+        src: api.env.j2
+        dest: "{{ app_config_dir }}/api.env"
+        owner: kk-api
+        group: kk-api
+        mode: "0640"
+      notify: Restart API
+
+    - name: Deploy Payments environment file
+      template:
+        src: payments.env.j2
+        dest: "{{ app_config_dir }}/payments.env"
+        owner: kk-payments
+        group: kk-payments
+        mode: "0640"
+      notify: Restart Payments
+
+    - name: Deploy Logs environment file
+      template:
+        src: logs.env.j2
+        dest: "{{ app_config_dir }}/logs.env"
+        owner: kk-logs
+        group: kk-logs
+        mode: "0640"
+      notify: Restart Logs
+
+    ####################################################
+    # Systemd Services
+    ####################################################
+
+    - name: Deploy API systemd service
+      template:
+        src: kk-api.service.j2
+        dest: /etc/systemd/system/kk-api.service
+      notify:
+        - Reload Systemd
+        - Restart API
+
+    - name: Deploy Payments systemd service
+      template:
+        src: kk-payments.service.j2
+        dest: /etc/systemd/system/kk-payments.service
+      notify:
+        - Reload Systemd
+        - Restart Payments
+
+    - name: Deploy Logs systemd service
+      template:
+        src: kk-logs.service.j2
+        dest: /etc/systemd/system/kk-logs.service
+      notify:
+        - Reload Systemd
+        - Restart Logs
+
+    ####################################################
+    # Enable Services
+    ####################################################
+
+    - name: Enable services
+      systemd:
+        name: "{{ item }}"
+        enabled: yes
+      loop:
+        - kk-api
+        - kk-payments
+        - kk-logs
+
+    ####################################################
+    # Firewall
+    ####################################################
+
+    - name: Allow SSH
+      ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+
+    - name: Allow HTTP
+      ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+
+    - name: Allow HTTPS
+      ufw:
+        rule: allow
+        port: "443"
+        proto: tcp
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    ####################################################
+    # Journal Persistence
+    ####################################################
+
+    - name: Create persistent journal directory
+      file:
+        path: /var/log/journal
+        state: directory
+        mode: "2755"
+
+    ####################################################
+    # Logrotate
+    ####################################################
+
+    - name: Install logrotate configuration
+      template:
+        src: kijanikiosk-logrotate.j2
+        dest: /etc/logrotate.d/kijanikiosk
+
+  handlers:
+
+    - name: Reload Systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart API
+      systemd:
+        name: kk-api
+        state: restarted
+
+    - name: Restart Payments
+      systemd:
+        name: kk-payments
+        state: restarted
+
+    - name: Restart Logs
+      systemd:
+        name: kk-logs
+        state: restarted
