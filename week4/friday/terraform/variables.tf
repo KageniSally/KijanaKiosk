@@ -1,53 +1,15 @@
-variable "region" {
-  description = "AWS region where the infrastructure will be deployed."
-  type        = string
-  default     = "us-east-1"
-}
-
-variable "instance_type" {
-  description = "EC2 instance type for all application servers."
-  type        = string
-  default     = "t2.micro"
-}
-
-variable "key_name" {
-  description = "AWS EC2 key pair used for SSH access."
-  type        = string
-}
-
-variable "vpc_id" {
-  description = "VPC where the infrastructure will be deployed."
-  type        = string
-}
-
-variable "subnet_id" {
-  description = "Subnet ID where the EC2 instances will be launched."
-  type        = string
-}
-
-variable "allowed_ssh_cidr" {
-  description = "CIDR block allowed to access the servers over SSH."
-  type        = string
-}
-
-variable "project_name" {
-  description = "Project name used for resource tagging."
-  type        = string
-  default     = "kijanikiosk"
-}
-
 variable "environment" {
-  description = "Deployment environment."
   type        = string
+  description = "Target deployment lifecycle tier descriptor."
   default     = "staging"
 }
 
-variable "common_tags" {
-  description = "Common tags applied to all AWS resources."
-  type        = map(string)
+variable "server_matrix" {
+  type        = map(map(string))
+  description = "Configuration data matrix mapping infrastructure targets."
   default = {
-    Project     = "KijaniKiosk"
-    Environment = "Staging"
-    ManagedBy   = "Terraform"
+    api      = { service_name = "kk-api", port = "2222" }
+    payments = { service_name = "kk-payments", port = "3333" }
+    logs     = { service_name = "kk-logs", port = "4444" }
   }
 }
