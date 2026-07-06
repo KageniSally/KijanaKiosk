@@ -31,3 +31,4 @@ module "app_servers" {
   cpus        = 1
   memory      = "1G"
 }
+
