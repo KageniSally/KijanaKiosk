@@ -17,9 +17,6 @@
 
   tasks:
 
-    ####################################################
-    # Install Packages
-    ####################################################
 
     - name: Install required packages
       apt:
@@ -34,9 +31,6 @@
           - logrotate
         state: present
 
-    ####################################################
-    # Create Service Accounts
-    ####################################################
 
     - name: Create API service account
       user:
@@ -59,9 +53,6 @@
         shell: /usr/sbin/nologin
         create_home: no
 
-    ####################################################
-    # Directory Structure
-    ####################################################
 
     - name: Create application directories
       file:
@@ -75,9 +66,6 @@
         - "{{ app_config_dir }}"
         - "{{ app_log_dir }}"
 
-    ####################################################
-    # Deploy Environment Files
-    ####################################################
 
     - name: Deploy API environment file
       template:
@@ -106,10 +94,6 @@
         mode: "0640"
       notify: Restart Logs
 
-    ####################################################
-    # Systemd Services
-    ####################################################
-
     - name: Deploy API systemd service
       template:
         src: kk-api.service.j2
@@ -134,9 +118,6 @@
         - Reload Systemd
         - Restart Logs
 
-    ####################################################
-    # Enable Services
-    ####################################################
 
     - name: Enable services
       systemd:
@@ -147,9 +128,6 @@
         - kk-payments
         - kk-logs
 
-    ####################################################
-    # Firewall
-    ####################################################
 
     - name: Allow SSH
       ufw:
@@ -173,9 +151,6 @@
       ufw:
         state: enabled
 
-    ####################################################
-    # Journal Persistence
-    ####################################################
 
     - name: Create persistent journal directory
       file:
@@ -183,9 +158,7 @@
         state: directory
         mode: "2755"
 
-    ####################################################
-    # Logrotate
-    ####################################################
+
 
     - name: Install logrotate configuration
       template:
