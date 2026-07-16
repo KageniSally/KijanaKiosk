@@ -1,0 +1,105 @@
+pipeline {
+    agent {
+        docker {
+            image 'node:18.20.4-alpine'
+            args '--network=host'
+        }
+    }
+
+    options {
+        timeout(time: 10, unit: 'MINUTES')
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    environment {
+        NEXUS_URL          = 'http://172.17.0.1:8081'
+        NEXUS_REPO         = 'kijanikiosk-npm-hosted'
+        NEXUS_CREDS_ID     = 'nexus-publisher-creds'
+        PACKAGE_NAME       = 'kijanikiosk-payments'
+        GIT_SHA_SHORT      = "${GIT_COMMIT.take(7)}"
+    }
+
+    stages {
+
+        stage('Lint') {
+            steps {
+                sh '''
+                    npm ci
+                    npm run lint
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Verify') {
+            parallel {
+                stage('Test') {
+                    steps {
+                        sh 'npm test -- --reporters=default --reporters=jest-junit'
+                    }
+                    post {
+                        always {
+                            junit 'reports/junit.xml'
+                        }
+                    }
+                }
+                stage('Security Audit') {
+                    steps {
+                        sh 'npm audit --audit-level=high'
+                    }
+                }
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                sh 'tar -czf ${PACKAGE_NAME}-build.tar.gz dist/'
+                archiveArtifacts artifacts: '**/*.tar.gz', fingerprint: true
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: env.NEXUS_CREDS_ID,
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASS'
+                )]) {
+                    sh '''
+                        NEW_VERSION=$(node -p "require('./package.json').version")-${GIT_SHA_SHORT}
+                        npm version ${NEW_VERSION} --no-git-tag-version
+
+                        cat > .npmrc <<EOF
+registry=${NEXUS_URL}/repository/${NEXUS_REPO}/
+//172.17.0.1:8081/repository/${NEXUS_REPO}/:_auth=$(echo -n "${NEXUS_USER}:${NEXUS_PASS}" | base64)
+EOF
+                        npm publish
+                        rm -f .npmrc
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo "Artifact published: ${env.NEXUS_URL}/repository/${env.NEXUS_REPO}/${env.PACKAGE_NAME}/"
+        }
+        failure {
+            echo "Pipeline failed at stage — notifying team"
+            // slackSend / mail step here if configured
+        }
+        changed {
+            echo "Build status changed from previous run: ${currentBuild.currentResult}"
+        }
+    }
+}
