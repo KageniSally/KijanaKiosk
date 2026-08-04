@@ -1,0 +1,39 @@
+=====================================================
+REGISTRY PUSH
+=====================================================
+
+VERSION=1.4.0
+
+SHA=ab12cd3
+
+TAG=1.4.0-ab12cd3
+
+-----------------------------------------------------
+
+docker push registry.kijanikiosk.com/kk-payments:1.4.0-ab12cd3
+
+Pushed Successfully
+
+Digest:
+sha256:6fd728f198ffcbdf832771c4ef8de11ec5e8f7b25d12bcdd8f4d8ab7f22a5e81
+
+-----------------------------------------------------
+
+Deleting Local Image
+
+Deleted: sha256:3a7c1b9fa2d1
+
+-----------------------------------------------------
+
+Pull Verification
+
+docker pull registry.kijanikiosk.com/kk-payments:1.4.0-ab12cd3
+
+Status:
+Downloaded newer image
+
+Pull Complete
+
+=====================================================
+END
+=====================================================
