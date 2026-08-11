@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kk-api-config
+  namespace: kijani-project
+
+data:
+  API_PORT: "80"
+  LOG_LEVEL: "info"
+  NODE_ENV: "development"
+  PAYMENTS_SERVICE_URL: "http://kk-payments:3001"
