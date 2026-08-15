@@ -73,17 +73,6 @@ The production approval stage was deliberately placed **after** the smoke test t
 
 ### 7. Verification
 
-The Kubernetes environment was verified using commands such as:
-
-```bash
-kubectl get namespaces
-kubectl get pods -n kijani-staging
-kubectl get deployments -n kijani-staging
-kubectl get services -n kijani-staging
-kubectl get configmap -n kijani-staging
-kubectl describe pod <pod-name> -n kijani-staging
-```
-
 The Jenkins pipeline was tested to verify the intended sequence:
 
 The configuration was also checked to ensure that staging and production use different environment-specific database configuration.
