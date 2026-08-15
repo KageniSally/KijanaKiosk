@@ -1,7 +1,7 @@
-# Repository Contents: Weekly Assignments
+# Sally Gitonga Capstone Project
+## Kijani Kiosk End to End Delivery
+### Tract Selected
+**Track A — Infrastructure-First**
 
-The `master` branch contains only the initial project structure and configuration files. 
+The project focuses on extending KijaniKiosk into a multi-environment, monitored, production-approaching system using Infrastructure as Code, configuration management, Kubernetes, Jenkins CI/CD, monitoring, and the existing serverless receipt chain.
 
-All course assignments and completed work are organized and stored exclusively on branches labeled by week (e.g., `week-1`, `week-2`). The `master` branch is intentionally kept clear of coursework to maintain an organized, week-by-week separation of all tasks. 
-
-To review the work for any specific assignment, please navigate directly to that week's corresponding branch.
