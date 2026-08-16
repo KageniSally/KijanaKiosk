@@ -1,0 +1,19 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+
+# Kubernetes
+*.secret.yaml
+*.secret.yml
+
+# Ansible
+*.retry
+
+# Environment files
+.env
+.env.*
