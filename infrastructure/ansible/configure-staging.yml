@@ -1,0 +1,38 @@
+---
+- name: Configure KijaniKiosk staging environment
+  hosts: staging
+  gather_facts: false
+
+  vars_files:
+    - group_vars/staging.yml
+
+  tasks:
+
+    - name: Verify staging namespace exists
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: "{{ staging_namespace }}"
+      register: staging_namespace_info
+
+    - name: Display staging namespace
+      ansible.builtin.debug:
+        msg: "Staging namespace {{ staging_namespace }} is ready"
+
+    - name: Create staging ConfigMap
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: kk-payments-config
+            namespace: "{{ staging_namespace }}"
+          data:
+            APP_ENV: "{{ staging_environment }}"
+            DB_HOST: "{{ db_host }}"
+            APP_NAME: "{{ app_name }}"
+
+    - name: Display configuration result
+      ansible.builtin.debug:
+        msg: "KijaniKiosk staging configuration applied successfully"

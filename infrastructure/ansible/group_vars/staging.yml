@@ -1,0 +1,6 @@
+staging_environment: staging
+staging_namespace: kijani-staging
+
+db_host: staging-db
+
+app_name: kk-payments
