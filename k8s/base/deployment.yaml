@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: kk-payments
+  labels:
+    app: kk-payments
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: kk-payments
+
+  template:
+    metadata:
+      labels:
+        app: kk-payments
+
+    spec:
+      containers:
+        - name: kk-payments
+
+          
+          image: sallygitonga/dev14-python:v1.0.0
+
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: kk-payments-config
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3

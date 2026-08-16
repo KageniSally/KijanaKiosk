@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: kk-payments-config
+
+data:
+  APP_ENV: "staging"
+  DB_HOST: "staging-db"
+
