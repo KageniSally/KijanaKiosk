@@ -21,8 +21,6 @@ spec:
     spec:
       containers:
         - name: kk-payments
-
-          
           image: sallygitonga/dev14-python:v1.0.0
 
           imagePullPolicy: IfNotPresent
